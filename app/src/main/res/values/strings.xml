@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SubSpy</string>
+
+    <!-- Login Screen -->
+    <string name="tagline">Find your forgotten subscriptions</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_in_description">We\'ll scan your Gmail for payment receipts to find active subscriptions</string>
+
+    <!-- Home Screen -->
+    <string name="monthly_spend">%s/month</string>
+    <string name="total_monthly_spend">Total Monthly Spend</string>
+    <string name="active_subscriptions">Active Subscriptions</string>
+    <string name="forgotten_subscriptions">Forgotten Subscriptions</string>
+    <string name="no_subscriptions_found">No subscriptions found yet</string>
+    <string name="scanning_emails">Scanning your emails…</string>
+    <string name="next_billing">Next billing: %s</string>
+    <string name="per_month">/month</string>
+    <string name="per_year">/year</string>
+    <string name="forgotten_tag">Forgotten</string>
+    <string name="last_used_over_6_months">Not used in 6+ months</string>
+
+    <!-- Detail Screen -->
+    <string name="subscription_detail">Subscription Detail</string>
+    <string name="monthly_amount">Monthly Amount</string>
+    <string name="total_spent">Total Spent</string>
+    <string name="next_billing_date">Next Billing Date</string>
+    <string name="first_payment">First Payment</string>
+    <string name="billing_frequency">Billing Frequency</string>
+    <string name="monthly">Monthly</string>
+    <string name="yearly">Yearly</string>
+    <string name="how_to_cancel">How to Cancel</string>
+    <string name="go_to_website">Go to Website</string>
+    <string name="cancellation_steps">Cancellation Steps</string>
+
+    <!-- Notifications Screen -->
+    <string name="notification_settings">Notification Settings</string>
+    <string name="remind_before_billing">Remind Before Billing</string>
+    <string name="three_days_before">3 days before</string>
+    <string name="seven_days_before">7 days before</string>
+    <string name="upcoming_charges">Upcoming Charges</string>
+    <string name="no_upcoming_charges">No upcoming charges</string>
+    <string name="notifications_enabled">Notifications enabled</string>
+    <string name="notifications_disabled">Notifications disabled</string>
+
+    <!-- Premium / Billing -->
+    <string name="upgrade_to_premium">Upgrade to Premium</string>
+    <string name="premium_price">$2.99/month</string>
+    <string name="free_limit_message">Free version shows up to 3 subscriptions</string>
+    <string name="premium_features_title">Premium Features</string>
+    <string name="premium_feature_unlimited">Unlimited subscription tracking</string>
+    <string name="premium_feature_notifications">Billing reminders &amp; notifications</string>
+    <string name="premium_feature_cancel">Step-by-step cancellation instructions</string>
+    <string name="subscribe_now">Subscribe Now</string>
+    <string name="restore_purchase">Restore Purchase</string>
+    <string name="premium_active">Premium Active</string>
+
+    <!-- General -->
+    <string name="settings">Settings</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="refresh">Refresh</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading…</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="back">Back</string>
+
+    <!-- Cancellation Instructions -->
+    <string name="cancel_step_1">Step 1: Go to the service\'s website</string>
+    <string name="cancel_step_2">Step 2: Log in to your account</string>
+    <string name="cancel_step_3">Step 3: Navigate to Account Settings or Billing</string>
+    <string name="cancel_step_4">Step 4: Find the cancellation or unsubscribe option</string>
+    <string name="cancel_step_5">Step 5: Confirm cancellation</string>
+</resources>
