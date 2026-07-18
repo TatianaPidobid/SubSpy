@@ -74,9 +74,13 @@ class AuthViewModel @Inject constructor(
                 _authState.value = AuthState.Loading
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 val account = task.getResult(ApiException::class.java)
+                if (account.idToken == null) {
+                    _authState.value = AuthState.Error("No ID token returned. Check web client ID / OAuth config.")
+                    return@launch
+                }
                 firebaseAuthWithGoogle(account)
             } catch (e: ApiException) {
-                _authState.value = AuthState.Error("Sign-in failed: ${e.message}")
+                _authState.value = AuthState.Error("Sign-in failed (code ${e.statusCode}): ${e.message}")
             }
         }
     }

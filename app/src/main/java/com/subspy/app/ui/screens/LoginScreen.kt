@@ -1,6 +1,5 @@
 package com.subspy.app.ui.screens
 
-import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -65,9 +64,7 @@ fun LoginScreen(
     val signInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            authViewModel.handleSignInResult(result.data)
-        }
+        authViewModel.handleSignInResult(result.data)
     }
 
     Box(
