@@ -13,6 +13,7 @@ import com.google.android.gms.common.api.Scope
 import com.google.api.services.gmail.GmailScopes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.subspy.app.R
 import com.subspy.app.data.model.UserProfile
 import com.subspy.app.data.repository.FirestoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,11 +53,7 @@ class AuthViewModel @Inject constructor(
     }
 
     private fun getWebClientId(): String {
-        val appInfo = context.packageManager.getApplicationInfo(
-            context.packageName, android.content.pm.PackageManager.GET_META_DATA
-        )
-        return appInfo.metaData?.getString("google_web_client_id")
-            ?: "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+        return context.getString(R.string.default_web_client_id)
     }
 
     private fun checkCurrentUser() {
