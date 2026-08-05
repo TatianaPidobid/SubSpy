@@ -12,6 +12,7 @@ import com.subspy.app.data.model.BillingFrequency
 import com.subspy.app.data.model.Subscription
 import com.subspy.app.data.repository.FirestoreRepository
 import com.subspy.app.data.repository.GmailRepository
+import com.subspy.app.data.repository.NotificationRepository
 import com.subspy.app.data.repository.SmsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,6 +28,7 @@ class SubscriptionViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val gmailRepository: GmailRepository,
     private val smsRepository: SmsRepository,
+    private val notificationRepository: NotificationRepository,
     private val firestoreRepository: FirestoreRepository,
     private val billingManager: BillingManager
 ) : ViewModel() {
@@ -103,6 +105,19 @@ class SubscriptionViewModel @Inject constructor(
                 _uiState.value = SubscriptionUiState.Error("SMS permission is required to scan messages")
             } catch (e: Exception) {
                 _uiState.value = SubscriptionUiState.Error(e.message ?: "Failed to scan SMS")
+            }
+        }
+    }
+
+    /** Detects subscriptions from bank push notifications captured in the background. */
+    fun scanNotifications() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = SubscriptionUiState.Scanning
+                val scanned = notificationRepository.scanNotifications()
+                mergeAndPersist(scanned)
+            } catch (e: Exception) {
+                _uiState.value = SubscriptionUiState.Error(e.message ?: "Failed to scan notifications")
             }
         }
     }

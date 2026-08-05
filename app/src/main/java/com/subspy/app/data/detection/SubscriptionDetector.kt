@@ -40,6 +40,41 @@ object SubscriptionDetector {
         "expressvpn" to Pair("ExpressVPN", "https://www.expressvpn.com")
     )
 
+    /** Words that indicate a message/notification is about a payment. */
+    val PAYMENT_KEYWORDS = listOf(
+        // English
+        "paid", "payment", "charged", "debited", "purchase", "subscription", "transaction",
+        "receipt", "renewal", "billed", "spent", "debit", "txn",
+        // Russian
+        "оплата", "оплачено", "списан", "списание", "покупка", "платеж", "платёж", "чек",
+        // Ukrainian
+        "сплачено", "списано", "оплата", "покупка"
+    )
+
+    private val MERCHANT_PATTERNS = listOf(
+        Regex("""(?:to|at|for|from)\s+([A-Za-z][A-Za-z0-9&.\-* ]{2,30})""", RegexOption.IGNORE_CASE),
+        Regex("""(?:в|у|на|від)\s+([A-Za-zА-Яа-яІіЇїЄє][A-Za-zА-Яа-яІіЇїЄє0-9&.\-* ]{2,30})""", RegexOption.IGNORE_CASE)
+    )
+
+    /**
+     * Best-effort extraction of a merchant name from free text (SMS body or bank
+     * notification). Falls back to [fallbackSender] when it looks like a name.
+     */
+    fun extractMerchant(text: String, fallbackSender: String): String? {
+        val lower = text.lowercase()
+        KNOWN_SERVICES.keys.firstOrNull { lower.contains(it) }?.let { return it }
+        for (pattern in MERCHANT_PATTERNS) {
+            val candidate = pattern.find(text)?.groupValues?.getOrNull(1)?.trim()
+            if (!candidate.isNullOrBlank()) {
+                return candidate.split(Regex("""\s{2,}|[.,;]""")).first().trim()
+            }
+        }
+        if (fallbackSender.isNotBlank() && !fallbackSender.any { it.isDigit() }) {
+            return fallbackSender
+        }
+        return null
+    }
+
     /**
      * Currency symbols/codes we recognise, mapped to an ISO code, ordered so the
      * regex tries the most specific tokens first.

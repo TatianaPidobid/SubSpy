@@ -24,24 +24,6 @@ import javax.inject.Singleton
 class SmsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    companion object {
-        private val PAYMENT_KEYWORDS = listOf(
-            // English
-            "paid", "payment", "charged", "debited", "purchase", "subscription", "transaction",
-            // Russian
-            "оплата", "оплачено", "списан", "списание", "покупка", "платеж", "платёж",
-            // Ukrainian
-            "оплата", "сплачено", "списано", "покупка",
-            // Hindi (romanised) / generic bank
-            "txn", "debit", "spent"
-        )
-
-        private val MERCHANT_PATTERNS = listOf(
-            Regex("""(?:to|at|for)\s+([A-Za-z][A-Za-z0-9&.\-* ]{2,30})""", RegexOption.IGNORE_CASE),
-            Regex("""(?:в|у|на)\s+([A-Za-zА-Яа-я][A-Za-zА-Яа-я0-9&.\-* ]{2,30})""", RegexOption.IGNORE_CASE)
-        )
-    }
-
     suspend fun scanSms(): List<Subscription> = withContext(Dispatchers.IO) {
         val events = mutableListOf<PaymentEvent>()
 
@@ -68,7 +50,7 @@ class SmsRepository @Inject constructor(
                 val body = if (bodyIdx >= 0) cursor.getString(bodyIdx) ?: "" else ""
                 if (body.isBlank()) continue
                 val lower = body.lowercase()
-                if (PAYMENT_KEYWORDS.none { lower.contains(it) }) continue
+                if (SubscriptionDetector.PAYMENT_KEYWORDS.none { lower.contains(it) }) continue
 
                 val (amount, currency) = SubscriptionDetector.extractAmountAndCurrency(body)
                     ?: continue
@@ -77,7 +59,7 @@ class SmsRepository @Inject constructor(
                 val dateMillis = if (dateIdx >= 0) cursor.getLong(dateIdx) else System.currentTimeMillis()
                 val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
 
-                val merchant = extractMerchant(body, address) ?: continue
+                val merchant = SubscriptionDetector.extractMerchant(body, address) ?: continue
 
                 events.add(
                     PaymentEvent(
@@ -94,26 +76,5 @@ class SmsRepository @Inject constructor(
         }
 
         SubscriptionDetector.detectSubscriptions(events)
-    }
-
-    private fun extractMerchant(body: String, address: String): String? {
-        val lower = body.lowercase()
-        // 1. Prefer a known service name mentioned in the message.
-        SubscriptionDetector.KNOWN_SERVICES.keys.firstOrNull { lower.contains(it) }?.let {
-            return it
-        }
-        // 2. Try "to/at <Merchant>" style patterns.
-        for (pattern in MERCHANT_PATTERNS) {
-            val match = pattern.find(body)
-            val candidate = match?.groupValues?.getOrNull(1)?.trim()
-            if (!candidate.isNullOrBlank()) {
-                return candidate.split(Regex("""\s{2,}|[.,;]""")).first().trim()
-            }
-        }
-        // 3. Fall back to the sender if it looks like a name (not a phone number).
-        if (address.isNotBlank() && !address.any { it.isDigit() }) {
-            return address
-        }
-        return null
     }
 }

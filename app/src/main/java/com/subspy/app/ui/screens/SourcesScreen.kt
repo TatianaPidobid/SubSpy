@@ -1,7 +1,9 @@
 package com.subspy.app.ui.screens
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.subspy.app.R
 import com.subspy.app.ui.theme.GreenAccent
@@ -115,6 +119,25 @@ fun SourcesScreen(
                         onBack()
                     } else {
                         smsPermissionLauncher.launch(Manifest.permission.READ_SMS)
+                    }
+                }
+            )
+
+            SourceCard(
+                icon = Icons.Default.Notifications,
+                title = stringResource(R.string.source_notifications_title),
+                subtitle = stringResource(R.string.source_notifications_desc),
+                onClick = {
+                    val enabled = NotificationManagerCompat
+                        .getEnabledListenerPackages(context)
+                        .contains(context.packageName)
+                    if (enabled) {
+                        subscriptionViewModel.scanNotifications()
+                        onBack()
+                    } else {
+                        context.startActivity(
+                            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        )
                     }
                 }
             )
