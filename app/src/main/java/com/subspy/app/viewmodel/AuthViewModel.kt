@@ -2,6 +2,7 @@ package com.subspy.app.viewmodel
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -66,20 +67,26 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun getSignInIntent(): Intent = googleSignInClient.signInIntent
+    fun getSignInIntent(): Intent {
+        Log.d(TAG, "getSignInIntent called")
+        return googleSignInClient.signInIntent
+    }
 
     fun handleSignInResult(data: Intent?) {
+        Log.d(TAG, "handleSignInResult called, data=${if (data == null) "null" else "present"}")
         viewModelScope.launch {
             try {
                 _authState.value = AuthState.Loading
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 val account = task.getResult(ApiException::class.java)
+                Log.d(TAG, "Google account: email=${account.email}, idToken=${if (account.idToken == null) "null" else "present"}")
                 if (account.idToken == null) {
                     _authState.value = AuthState.Error("No ID token returned. Check web client ID / OAuth config.")
                     return@launch
                 }
                 firebaseAuthWithGoogle(account)
             } catch (e: ApiException) {
+                Log.e(TAG, "Google sign-in ApiException code=${e.statusCode}", e)
                 _authState.value = AuthState.Error("Sign-in failed (code ${e.statusCode}): ${e.message}")
             }
         }
@@ -99,9 +106,19 @@ class AuthViewModel @Inject constructor(
                     photoUrl = user.photoUrl?.toString() ?: "",
                     isPremium = false
                 )
-                firestoreRepository.saveUserProfile(profile)
+                Log.d(TAG, "Firebase auth success, uid=${user.uid} -> Authenticated")
                 _userProfile.value = profile
                 _authState.value = AuthState.Authenticated
+
+                viewModelScope.launch {
+                    try {
+                        firestoreRepository.saveUserProfile(profile)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to save user profile", e)
+                    }
+                }
+            } else {
+                _authState.value = AuthState.Error("Authentication failed: no user returned")
             }
         } catch (e: Exception) {
             _authState.value = AuthState.Error("Authentication failed: ${e.message}")
@@ -119,6 +136,10 @@ class AuthViewModel @Inject constructor(
         googleSignInClient.signOut()
         _authState.value = AuthState.Unauthenticated
         _userProfile.value = null
+    }
+
+    companion object {
+        private const val TAG = "SubSpyAuth"
     }
 }
 
