@@ -11,8 +11,10 @@ import com.subspy.app.data.detection.SubscriptionSource
 import com.subspy.app.data.model.BillingFrequency
 import com.subspy.app.data.model.Subscription
 import com.subspy.app.data.repository.FirestoreRepository
+import android.app.Activity
 import com.subspy.app.data.repository.GmailRepository
 import com.subspy.app.data.repository.NotificationRepository
+import com.subspy.app.data.repository.OutlookRepository
 import com.subspy.app.data.repository.SmsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -29,6 +31,7 @@ class SubscriptionViewModel @Inject constructor(
     private val gmailRepository: GmailRepository,
     private val smsRepository: SmsRepository,
     private val notificationRepository: NotificationRepository,
+    private val outlookRepository: OutlookRepository,
     private val firestoreRepository: FirestoreRepository,
     private val billingManager: BillingManager
 ) : ViewModel() {
@@ -118,6 +121,21 @@ class SubscriptionViewModel @Inject constructor(
                 mergeAndPersist(scanned)
             } catch (e: Exception) {
                 _uiState.value = SubscriptionUiState.Error(e.message ?: "Failed to scan notifications")
+            }
+        }
+    }
+
+    /** Signs into a Microsoft/Outlook account and scans its mail for subscriptions. */
+    fun scanOutlook(activity: Activity) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = SubscriptionUiState.Scanning
+                val scanned = outlookRepository.signInAndScan(activity)
+                mergeAndPersist(scanned)
+            } catch (e: OutlookRepository.NotConfiguredException) {
+                _uiState.value = SubscriptionUiState.Error("Outlook is not set up yet")
+            } catch (e: Exception) {
+                _uiState.value = SubscriptionUiState.Error(e.message ?: "Failed to scan Outlook")
             }
         }
     }

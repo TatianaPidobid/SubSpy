@@ -62,6 +62,8 @@
     <string name="source_gmail_desc">Find subscriptions from payment receipts in your inbox</string>
     <string name="source_sms_title">Scan SMS</string>
     <string name="source_sms_desc">Detect recurring charges from bank text messages</string>
+    <string name="source_outlook_title">Scan Outlook</string>
+    <string name="source_outlook_desc">Find subscriptions from receipts in your Outlook/Microsoft mail</string>
     <string name="source_notifications_title">Bank notifications</string>
     <string name="source_notifications_desc">Read payment alerts from your bank apps (needs notification access)</string>
     <string name="source_manual_title">Add manually</string>

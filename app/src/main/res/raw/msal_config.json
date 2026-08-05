@@ -1,0 +1,16 @@
+{
+  "client_id": "YOUR_AZURE_CLIENT_ID",
+  "authorization_user_agent": "DEFAULT",
+  "redirect_uri": "msauth://com.subspy.app/a%2Fbz28r0ApvLlYnXdKA4ZRIsJ%2F8%3D",
+  "account_mode": "SINGLE",
+  "broker_redirect_uri_registered": false,
+  "authorities": [
+    {
+      "type": "AAD",
+      "audience": {
+        "type": "AzureADandPersonalMicrosoftAccount",
+        "tenant_id": "common"
+      }
+    }
+  ]
+}

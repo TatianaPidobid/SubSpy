@@ -87,6 +87,9 @@ dependencies {
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
+    // Microsoft Authentication (Outlook / Microsoft Graph)
+    implementation("com.microsoft.identity.client:msal:5.10.0")
+
     // Gmail API
     implementation("com.google.api-client:google-api-client-android:2.2.0")
     implementation("com.google.apis:google-api-services-gmail:v1-rev20231218-2.0.0")

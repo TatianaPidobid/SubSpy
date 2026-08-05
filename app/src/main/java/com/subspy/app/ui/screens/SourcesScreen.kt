@@ -1,6 +1,9 @@
 package com.subspy.app.ui.screens
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
@@ -24,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Card
@@ -124,6 +128,18 @@ fun SourcesScreen(
             )
 
             SourceCard(
+                icon = Icons.Default.MailOutline,
+                title = stringResource(R.string.source_outlook_title),
+                subtitle = stringResource(R.string.source_outlook_desc),
+                onClick = {
+                    context.findActivity()?.let { activity ->
+                        subscriptionViewModel.scanOutlook(activity)
+                        onBack()
+                    }
+                }
+            )
+
+            SourceCard(
                 icon = Icons.Default.Notifications,
                 title = stringResource(R.string.source_notifications_title),
                 subtitle = stringResource(R.string.source_notifications_desc),
@@ -150,6 +166,15 @@ fun SourcesScreen(
             )
         }
     }
+}
+
+private fun Context.findActivity(): Activity? {
+    var ctx: Context? = this
+    while (ctx is ContextWrapper) {
+        if (ctx is Activity) return ctx
+        ctx = ctx.baseContext
+    }
+    return null
 }
 
 @Composable
