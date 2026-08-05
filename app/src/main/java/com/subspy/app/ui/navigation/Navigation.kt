@@ -6,10 +6,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.subspy.app.ui.screens.AddSubscriptionScreen
 import com.subspy.app.ui.screens.HomeScreen
 import com.subspy.app.ui.screens.LoginScreen
 import com.subspy.app.ui.screens.NotificationsScreen
 import com.subspy.app.ui.screens.PremiumScreen
+import com.subspy.app.ui.screens.SourcesScreen
 import com.subspy.app.ui.screens.SubscriptionDetailScreen
 import com.subspy.app.viewmodel.AuthState
 import com.subspy.app.viewmodel.AuthViewModel
@@ -23,6 +25,8 @@ sealed class Screen(val route: String) {
     }
     data object Notifications : Screen("notifications")
     data object Premium : Screen("premium")
+    data object Sources : Screen("sources")
+    data object AddManual : Screen("add_manual")
 }
 
 @Composable
@@ -64,6 +68,9 @@ fun SubSpyNavigation(
                 onPremiumClick = {
                     navController.navigate(Screen.Premium.route)
                 },
+                onAddSourcesClick = {
+                    navController.navigate(Screen.Sources.route)
+                },
                 onSignOut = {
                     authViewModel.signOut()
                     navController.navigate(Screen.Login.route) {
@@ -94,6 +101,21 @@ fun SubSpyNavigation(
 
         composable(Screen.Premium.route) {
             PremiumScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Sources.route) {
+            SourcesScreen(
+                subscriptionViewModel = subscriptionViewModel,
+                onAddManual = { navController.navigate(Screen.AddManual.route) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.AddManual.route) {
+            AddSubscriptionScreen(
+                subscriptionViewModel = subscriptionViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

@@ -55,6 +55,21 @@
     <string name="restore_purchase">Restore Purchase</string>
     <string name="premium_active">Premium Active</string>
 
+    <!-- Add / Scan sources -->
+    <string name="add_subscription">Add subscription</string>
+    <string name="choose_source">Choose how to find your subscriptions</string>
+    <string name="source_gmail_title">Scan Gmail</string>
+    <string name="source_gmail_desc">Find subscriptions from payment receipts in your inbox</string>
+    <string name="source_sms_title">Scan SMS</string>
+    <string name="source_sms_desc">Detect recurring charges from bank text messages</string>
+    <string name="source_manual_title">Add manually</string>
+    <string name="source_manual_desc">Enter a subscription yourself</string>
+    <string name="field_service_name">Service name</string>
+    <string name="field_amount">Amount</string>
+    <string name="field_currency">Currency</string>
+    <string name="field_next_billing_optional">Next billing date (optional, YYYY-MM-DD)</string>
+    <string name="save">Save</string>
+
     <!-- General -->
     <string name="settings">Settings</string>
     <string name="sign_out">Sign Out</string>

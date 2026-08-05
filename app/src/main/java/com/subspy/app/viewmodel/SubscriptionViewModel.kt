@@ -7,21 +7,26 @@ import com.google.api.services.gmail.GmailScopes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.subspy.app.billing.BillingManager
+import com.subspy.app.data.detection.SubscriptionSource
+import com.subspy.app.data.model.BillingFrequency
 import com.subspy.app.data.model.Subscription
 import com.subspy.app.data.repository.FirestoreRepository
 import com.subspy.app.data.repository.GmailRepository
+import com.subspy.app.data.repository.SmsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class SubscriptionViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val gmailRepository: GmailRepository,
+    private val smsRepository: SmsRepository,
     private val firestoreRepository: FirestoreRepository,
     private val billingManager: BillingManager
 ) : ViewModel() {
@@ -77,21 +82,95 @@ class SubscriptionViewModel @Inject constructor(
                 )
                 credential.selectedAccount = account.account
 
-                val scannedSubscriptions = gmailRepository.scanEmails(credential)
-
-                if (scannedSubscriptions.isNotEmpty()) {
-                    firestoreRepository.saveSubscriptions(scannedSubscriptions)
-                    updateSubscriptionData(scannedSubscriptions)
-                    _uiState.value = SubscriptionUiState.Success
-                } else {
-                    _uiState.value = SubscriptionUiState.Empty
-                }
+                val scanned = gmailRepository.scanEmails(credential)
+                mergeAndPersist(scanned)
             } catch (e: Exception) {
                 _uiState.value = SubscriptionUiState.Error(
                     e.message ?: "Failed to scan emails"
                 )
             }
         }
+    }
+
+    /** Scans the device SMS inbox. Caller must ensure READ_SMS is granted. */
+    fun scanSms() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = SubscriptionUiState.Scanning
+                val scanned = smsRepository.scanSms()
+                mergeAndPersist(scanned)
+            } catch (e: SecurityException) {
+                _uiState.value = SubscriptionUiState.Error("SMS permission is required to scan messages")
+            } catch (e: Exception) {
+                _uiState.value = SubscriptionUiState.Error(e.message ?: "Failed to scan SMS")
+            }
+        }
+    }
+
+    fun addManualSubscription(
+        serviceName: String,
+        amount: Double,
+        currency: String,
+        frequency: BillingFrequency,
+        nextBillingDate: String,
+        websiteUrl: String = ""
+    ) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = SubscriptionUiState.Scanning
+                val subscription = Subscription(
+                    id = "manual_${System.currentTimeMillis()}",
+                    serviceName = serviceName.trim(),
+                    amount = amount,
+                    currency = currency,
+                    frequency = frequency,
+                    nextBillingDate = nextBillingDate.ifBlank {
+                        LocalDate.now().plusMonths(1).toString()
+                    },
+                    firstPaymentDate = LocalDate.now().toString(),
+                    lastPaymentDate = LocalDate.now().toString(),
+                    websiteUrl = websiteUrl.trim(),
+                    isForgotten = false,
+                    isActive = true,
+                    source = SubscriptionSource.MANUAL
+                )
+                mergeAndPersist(listOf(subscription))
+            } catch (e: Exception) {
+                _uiState.value = SubscriptionUiState.Error(e.message ?: "Failed to add subscription")
+            }
+        }
+    }
+
+    /**
+     * Merges freshly detected subscriptions with what is already stored (keyed by
+     * id, new entries win), persists the union, and refreshes the UI. This lets
+     * multiple sources (Gmail, SMS, manual) contribute without overwriting each
+     * other.
+     */
+    private suspend fun mergeAndPersist(newSubs: List<Subscription>) {
+        val existing = try {
+            firestoreRepository.getSubscriptions()
+        } catch (e: Exception) {
+            emptyList()
+        }
+
+        val merged = (existing + newSubs)
+            .associateBy { it.id }
+            .values
+            .toList()
+            .sortedByDescending { it.amount }
+
+        if (merged.isEmpty()) {
+            _uiState.value = SubscriptionUiState.Empty
+            return
+        }
+
+        try {
+            firestoreRepository.saveSubscriptions(merged)
+        } catch (_: Exception) {
+        }
+        updateSubscriptionData(merged)
+        _uiState.value = SubscriptionUiState.Success
     }
 
     private fun updateSubscriptionData(subs: List<Subscription>) {

@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Notifications
@@ -29,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +66,7 @@ fun HomeScreen(
     onSubscriptionClick: (String) -> Unit,
     onNotificationsClick: () -> Unit,
     onPremiumClick: () -> Unit,
+    onAddSourcesClick: () -> Unit,
     onSignOut: () -> Unit
 ) {
     val uiState by subscriptionViewModel.uiState.collectAsState()
@@ -116,6 +119,15 @@ fun HomeScreen(
                         )
                     }
                 }
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onAddSourcesClick,
+                containerColor = GreenAccent,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                text = { Text(stringResource(R.string.add_subscription)) }
             )
         }
     ) { paddingValues ->

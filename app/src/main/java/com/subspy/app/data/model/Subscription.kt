@@ -19,7 +19,8 @@ data class Subscription(
     val cancellationUrl: String = "",
     val isForgotten: Boolean = false,
     val userId: String = "",
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val source: String = ""
 ) {
     val monthlyAmount: Double
         get() = when (frequency) {
