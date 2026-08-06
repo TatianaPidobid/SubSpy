@@ -11,6 +11,7 @@ import com.subspy.app.ui.screens.HomeScreen
 import com.subspy.app.ui.screens.LoginScreen
 import com.subspy.app.ui.screens.NotificationsScreen
 import com.subspy.app.ui.screens.PremiumScreen
+import com.subspy.app.ui.screens.RegisterScreen
 import com.subspy.app.ui.screens.SourcesScreen
 import com.subspy.app.ui.screens.SubscriptionDetailScreen
 import com.subspy.app.viewmodel.AuthState
@@ -19,6 +20,7 @@ import com.subspy.app.viewmodel.SubscriptionViewModel
 
 sealed class Screen(val route: String) {
     data object Login : Screen("login")
+    data object Register : Screen("register")
     data object Home : Screen("home")
     data object Detail : Screen("detail/{subscriptionId}") {
         fun createRoute(id: String) = "detail/$id"
@@ -52,7 +54,22 @@ fun SubSpyNavigation(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Screen.Register.route)
                 }
+            )
+        }
+
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                authViewModel = authViewModel,
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onBackToLogin = { navController.popBackStack() }
             )
         }
 
