@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.subspy.app.ui.screens.AddSubscriptionScreen
 import com.subspy.app.ui.screens.AnalyticsScreen
+import com.subspy.app.ui.screens.CancelFlowScreen
 import com.subspy.app.ui.screens.HomeScreen
 import com.subspy.app.ui.screens.LoginScreen
 import com.subspy.app.ui.screens.NotificationsScreen
@@ -25,6 +26,9 @@ sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object Detail : Screen("detail/{subscriptionId}") {
         fun createRoute(id: String) = "detail/$id"
+    }
+    data object Cancel : Screen("cancel/{subscriptionId}") {
+        fun createRoute(id: String) = "cancel/$id"
     }
     data object Notifications : Screen("notifications")
     data object Analytics : Screen("analytics")
@@ -108,6 +112,21 @@ fun SubSpyNavigation(
         ) { backStackEntry ->
             val subscriptionId = backStackEntry.arguments?.getString("subscriptionId") ?: ""
             SubscriptionDetailScreen(
+                subscriptionId = subscriptionId,
+                subscriptionViewModel = subscriptionViewModel,
+                onCancelClick = { id ->
+                    navController.navigate(Screen.Cancel.createRoute(id))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.Cancel.route,
+            arguments = listOf(navArgument("subscriptionId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val subscriptionId = backStackEntry.arguments?.getString("subscriptionId") ?: ""
+            CancelFlowScreen(
                 subscriptionId = subscriptionId,
                 subscriptionViewModel = subscriptionViewModel,
                 onBack = { navController.popBackStack() }

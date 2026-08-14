@@ -196,6 +196,23 @@ class SubscriptionViewModel @Inject constructor(
         }
     }
 
+    /** Marks a subscription as cancelled: it stops counting towards spending. */
+    fun markCancelled(id: String) {
+        val target = _subscriptions.value.find { it.id == id } ?: return
+        val cancelled = target.copy(isActive = false, usage = UsageStatus.NOT_USED)
+        _subscriptions.value = _subscriptions.value.map {
+            if (it.id == id) cancelled else it
+        }
+        _totalMonthlySpend.value =
+            (_totalMonthlySpend.value - target.monthlyAmount).coerceAtLeast(0.0)
+        viewModelScope.launch {
+            try {
+                firestoreRepository.updateSubscription(cancelled)
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     /**
      * Merges freshly detected subscriptions with what is already stored (keyed by
      * id, new entries win), persists the union, and refreshes the UI. This lets

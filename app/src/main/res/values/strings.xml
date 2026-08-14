@@ -143,4 +143,28 @@
     <string name="cancel_step_3">Step 3: Navigate to Account Settings or Billing</string>
     <string name="cancel_step_4">Step 4: Find the cancellation or unsubscribe option</string>
     <string name="cancel_step_5">Step 5: Confirm cancellation</string>
+
+    <!-- Guided cancellation flow -->
+    <string name="cancel_subscription">Cancel subscription</string>
+    <string name="done">Done</string>
+    <string name="cancel_tap_here">Tap here</string>
+    <string name="cancel_tap_button">Find the button %1$s on the page below</string>
+    <string name="cancel_tap_generic">On the %1$s page find the cancel button</string>
+    <string name="cancel_done_on_site">I am done</string>
+    <string name="cancel_did_it_work">Did the subscription get cancelled?</string>
+    <string name="answer_yes">YES</string>
+    <string name="answer_no">NO</string>
+    <string name="cancel_congrats">Well done! The subscription is cancelled.</string>
+    <string name="cancel_savings">You save %1$s a year</string>
+    <string name="letter_title">We wrote a letter for you</string>
+    <string name="letter_subject">Cancel my %1$s subscription and refund the charges</string>
+    <string name="letter_body">Hello,\n\nI want to cancel my %1$s subscription immediately and stop all further charges.\n\nPayment: %2$s %3$s\nFirst charge: %4$s\nLast charge: %5$s\n\nI could not cancel the subscription on your website. Please cancel it, confirm the cancellation in writing and refund the charges taken after my cancellation request.\n\nThank you.</string>
+    <string name="letter_send">Send letter</string>
+    <string name="letter_copy_and_open">Copy letter and open support</string>
+    <string name="letter_did_not_help">The letter did not help</string>
+    <string name="bank_title">Stop the charge through your bank</string>
+    <string name="bank_step_1">Open your bank app or call the number on the back of your card.</string>
+    <string name="bank_step_2">Say: \"Please block recurring payments to %1$s on my card\".</string>
+    <string name="bank_step_3">If the bank cannot block it, ask them to reissue the card with a new number.</string>
+    <string name="bank_step_4">Ask to dispute the last charges: say the subscription was not cancelled after your request.</string>
 </resources>

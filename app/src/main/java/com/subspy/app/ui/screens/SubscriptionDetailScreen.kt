@@ -1,7 +1,5 @@
 package com.subspy.app.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -29,13 +26,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -43,19 +38,16 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.subspy.app.R
 import com.subspy.app.data.model.BillingFrequency
-import com.subspy.app.data.model.CancellationDatabase
+import com.subspy.app.data.model.Subscription
 import com.subspy.app.data.model.UsageStatus
 import com.subspy.app.ui.theme.ForgottenRed
 import com.subspy.app.ui.theme.GreenAccent
@@ -69,12 +61,11 @@ import java.util.Locale
 fun SubscriptionDetailScreen(
     subscriptionId: String,
     subscriptionViewModel: SubscriptionViewModel,
+    onCancelClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val subscriptions by subscriptionViewModel.subscriptions.collectAsState()
     val subscription = subscriptions.find { it.id == subscriptionId }
-    val context = LocalContext.current
-    var showCancellationSteps by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -106,20 +97,30 @@ fun SubscriptionDetailScreen(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-            return@Scaffold
+        } else {
+            DetailBody(
+                subscription = subscription,
+                subscriptionViewModel = subscriptionViewModel,
+                onCancelClick = { onCancelClick(subscription.id) },
+                modifier = Modifier.padding(paddingValues)
+            )
         }
+    }
+}
 
-        val cancellationInfo = remember(subscription.serviceName) {
-            CancellationDatabase.getCancellationInfo(subscription.serviceName)
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
+@Composable
+private fun DetailBody(
+    subscription: Subscription,
+    subscriptionViewModel: SubscriptionViewModel,
+    onCancelClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
             // Service header
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -275,109 +276,26 @@ fun SubscriptionDetailScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // How to Cancel button
+            // The single, unmistakable action: start the guided cancellation.
             Button(
-                onClick = { showCancellationSteps = !showCancellationSteps },
+                onClick = onCancelClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = ForgottenRed
-                ),
-                shape = RoundedCornerShape(16.dp)
+                    .height(68.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenAccent),
+                shape = RoundedCornerShape(18.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.how_to_cancel),
-                    fontWeight = FontWeight.SemiBold
+                    text = stringResource(R.string.cancel_subscription),
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextOnGreen
                 )
             }
 
-            // Cancellation steps
-            if (showCancellationSteps) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = stringResource(R.string.cancellation_steps),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        cancellationInfo.steps.forEachIndexed { index, step ->
-                            Row(
-                                modifier = Modifier.padding(vertical = 6.dp),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape)
-                                        .background(GreenAccent),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "${index + 1}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = TextOnGreen,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = step,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            if (index < cancellationInfo.steps.size - 1) {
-                                Divider(
-                                    modifier = Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp),
-                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Go to website button
-            val websiteUrl = cancellationInfo.cancellationUrl.ifBlank { subscription.websiteUrl }
-            if (websiteUrl.isNotBlank()) {
-                OutlinedButton(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(websiteUrl))
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Icon(
-                        Icons.Default.OpenInNew,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.go_to_website),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(32.dp))
-        }
     }
 }
 

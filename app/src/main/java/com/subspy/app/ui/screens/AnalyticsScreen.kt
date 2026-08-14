@@ -64,7 +64,8 @@ fun AnalyticsScreen(
     subscriptionViewModel: SubscriptionViewModel,
     onBack: () -> Unit
 ) {
-    val subscriptions by subscriptionViewModel.subscriptions.collectAsState()
+    val allSubscriptions by subscriptionViewModel.subscriptions.collectAsState()
+    val subscriptions = allSubscriptions.filter { it.isActive }
 
     val monthlyPoints = remember(subscriptions) { monthlySeries(subscriptions) }
     val categorySlices = remember(subscriptions) { categoryBreakdown(subscriptions) }

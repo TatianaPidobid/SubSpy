@@ -85,10 +85,12 @@ fun HomeScreen(
     val isPremium by subscriptionViewModel.isPremium.collectAsState()
     var selectedCategory by remember { mutableStateOf<SubscriptionCategory?>(null) }
 
+    // Cancelled subscriptions stay in Firestore but disappear from the list.
+    val liveSubscriptions = subscriptions.filter { it.isActive }
     val usedCategories = SubscriptionCategory.entries.filter { category ->
-        subscriptions.any { it.category == category }
+        liveSubscriptions.any { it.category == category }
     }
-    val visibleSubscriptions = subscriptions.filter {
+    val visibleSubscriptions = liveSubscriptions.filter {
         selectedCategory == null || it.category == selectedCategory
     }
 

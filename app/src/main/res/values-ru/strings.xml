@@ -96,5 +96,28 @@
     <string name="cancel_step_2">Шаг 2: Войдите в свой аккаунт</string>
     <string name="cancel_step_3">Шаг 3: Перейдите в Настройки Аккаунта или Оплату</string>
     <string name="cancel_step_4">Шаг 4: Найдите опцию отмены подписки</string>
+    <string name="cancel_subscription">Отменить подписку</string>
+    <string name="done">Готово</string>
+    <string name="cancel_tap_here">Нажмите вот сюда</string>
+    <string name="cancel_tap_button">На странице ниже найдите кнопку %1$s</string>
+    <string name="cancel_tap_generic">На странице %1$s найдите кнопку отмены</string>
+    <string name="cancel_done_on_site">Я нажал(а)</string>
+    <string name="cancel_did_it_work">Получилось отменить?</string>
+    <string name="answer_yes">ДА</string>
+    <string name="answer_no">НЕТ</string>
+    <string name="cancel_congrats">Молодец! Подписка отменена.</string>
+    <string name="cancel_savings">Вы экономите %1$s в год</string>
+    <string name="letter_title">Мы написали письмо за вас</string>
+    <string name="letter_subject">Отмените мою подписку %1$s и верните деньги</string>
+    <string name="letter_body">Здравствуйте!\n\nПрошу немедленно отменить мою подписку %1$s и прекратить все дальнейшие списания.\n\nПлатёж: %2$s %3$s\nПервое списание: %4$s\nПоследнее списание: %5$s\n\nОтменить подписку на вашем сайте у меня не получилось. Прошу отменить её, подтвердить отмену письмом и вернуть деньги, списанные после моего обращения.\n\nСпасибо.</string>
+    <string name="letter_send">Отправить письмо</string>
+    <string name="letter_copy_and_open">Скопировать письмо и открыть поддержку</string>
+    <string name="letter_did_not_help">Письмо не помогло</string>
+    <string name="bank_title">Остановите списание через банк</string>
+    <string name="bank_step_1">Откройте приложение своего банка или позвоните по номеру на обратной стороне карты.</string>
+    <string name="bank_step_2">Скажите: \"Заблокируйте регулярные списания в пользу %1$s по моей карте\".</string>
+    <string name="bank_step_3">Если банк не может заблокировать — попросите перевыпустить карту с новым номером.</string>
+    <string name="bank_step_4">Попросите оспорить последние списания: скажите, что подписку не отменили после вашего обращения.</string>
+
     <string name="cancel_step_5">Шаг 5: Подтвердите отмену</string>
 </resources>
