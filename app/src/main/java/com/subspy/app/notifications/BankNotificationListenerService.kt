@@ -29,6 +29,7 @@ class BankNotificationListenerService : NotificationListenerService() {
 
         val (amount, currency) = SubscriptionDetector.extractAmountAndCurrency(content) ?: return
         val merchant = SubscriptionDetector.extractMerchant(content, title) ?: return
+        val displayMerchant = merchant.replaceFirstChar { it.uppercase() }
 
         NotificationCaptureStore.addEvent(
             context = applicationContext,
@@ -36,6 +37,14 @@ class BankNotificationListenerService : NotificationListenerService() {
             amount = amount,
             currency = currency,
             sourceApp = sbn.packageName ?: ""
+        )
+
+        // Alert the user right after a charge is detected.
+        SubSpyNotifier.notifyCharge(
+            context = applicationContext,
+            merchant = displayMerchant,
+            amount = amount,
+            currency = currency
         )
     }
 }

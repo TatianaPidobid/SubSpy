@@ -36,11 +36,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.subspy.app.R
 import com.subspy.app.data.model.Subscription
+import com.subspy.app.notifications.NotificationPrefs
 import com.subspy.app.ui.theme.GreenAccent
 import com.subspy.app.viewmodel.SubscriptionViewModel
 import java.text.NumberFormat
@@ -55,8 +58,10 @@ fun NotificationsScreen(
     onBack: () -> Unit
 ) {
     val subscriptions by subscriptionViewModel.subscriptions.collectAsState()
-    var threeDaysEnabled by remember { mutableStateOf(true) }
-    var sevenDaysEnabled by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var enabledOffsets by remember {
+        mutableStateOf(NotificationPrefs.enabledOffsets(context).toSet())
+    }
 
     val upcomingSubscriptions = remember(subscriptions) {
         subscriptions.filter { sub ->
@@ -115,22 +120,40 @@ fun NotificationsScreen(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        NotificationToggleRow(
-                            text = stringResource(R.string.three_days_before),
-                            checked = threeDaysEnabled,
-                            onCheckedChange = { threeDaysEnabled = it }
-                        )
-                        Divider(
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                        NotificationToggleRow(
-                            text = stringResource(R.string.seven_days_before),
-                            checked = sevenDaysEnabled,
-                            onCheckedChange = { sevenDaysEnabled = it }
-                        )
+                        NotificationPrefs.OFFSETS.forEachIndexed { index, days ->
+                            NotificationToggleRow(
+                                text = pluralStringResource(
+                                    R.plurals.days_before_billing,
+                                    days,
+                                    days
+                                ),
+                                checked = days in enabledOffsets,
+                                onCheckedChange = { checked ->
+                                    NotificationPrefs.setEnabled(context, days, checked)
+                                    enabledOffsets = if (checked) {
+                                        enabledOffsets + days
+                                    } else {
+                                        enabledOffsets - days
+                                    }
+                                }
+                            )
+                            if (index < NotificationPrefs.OFFSETS.lastIndex) {
+                                Divider(
+                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
+                        }
                     }
                 }
+            }
+
+            item {
+                Text(
+                    text = stringResource(R.string.charge_alerts_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             // Upcoming charges

@@ -46,6 +46,11 @@ class FirestoreRepository @Inject constructor(
         }
     }
 
+    suspend fun updateSubscription(subscription: Subscription) {
+        val docId = subscription.id.ifBlank { subscription.serviceName.hashCode().toString() }
+        subscriptionsCollection().document(docId).set(subscription.copy(userId = userId)).await()
+    }
+
     suspend fun deleteSubscription(subscriptionId: String) {
         subscriptionsCollection().document(subscriptionId).delete().await()
     }

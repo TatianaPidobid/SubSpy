@@ -7,9 +7,12 @@ import com.google.api.services.gmail.GmailScopes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.subspy.app.billing.BillingManager
+import com.subspy.app.data.detection.SubscriptionDetector
 import com.subspy.app.data.detection.SubscriptionSource
 import com.subspy.app.data.model.BillingFrequency
 import com.subspy.app.data.model.Subscription
+import com.subspy.app.data.model.SubscriptionCategory
+import com.subspy.app.data.model.UsageStatus
 import com.subspy.app.data.repository.FirestoreRepository
 import android.app.Activity
 import com.subspy.app.data.repository.GmailRepository
@@ -146,14 +149,16 @@ class SubscriptionViewModel @Inject constructor(
         currency: String,
         frequency: BillingFrequency,
         nextBillingDate: String,
-        websiteUrl: String = ""
+        websiteUrl: String = "",
+        category: SubscriptionCategory? = null
     ) {
         viewModelScope.launch {
             try {
                 _uiState.value = SubscriptionUiState.Scanning
+                val name = serviceName.trim()
                 val subscription = Subscription(
                     id = "manual_${System.currentTimeMillis()}",
-                    serviceName = serviceName.trim(),
+                    serviceName = name,
                     amount = amount,
                     currency = currency,
                     frequency = frequency,
@@ -165,11 +170,28 @@ class SubscriptionViewModel @Inject constructor(
                     websiteUrl = websiteUrl.trim(),
                     isForgotten = false,
                     isActive = true,
-                    source = SubscriptionSource.MANUAL
+                    source = SubscriptionSource.MANUAL,
+                    category = category ?: SubscriptionDetector.categorize(name)
                 )
                 mergeAndPersist(listOf(subscription))
             } catch (e: Exception) {
                 _uiState.value = SubscriptionUiState.Error(e.message ?: "Failed to add subscription")
+            }
+        }
+    }
+
+    /** Marks how actively the user uses a subscription and persists the change. */
+    fun setUsage(id: String, status: UsageStatus) {
+        val updated = _subscriptions.value.map {
+            if (it.id == id) it.copy(usage = status) else it
+        }
+        _subscriptions.value = updated
+        viewModelScope.launch {
+            updated.find { it.id == id }?.let { sub ->
+                try {
+                    firestoreRepository.updateSubscription(sub)
+                } catch (_: Exception) {
+                }
             }
         }
     }

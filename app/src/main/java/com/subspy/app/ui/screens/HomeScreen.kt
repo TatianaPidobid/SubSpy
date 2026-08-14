@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Notifications
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.subspy.app.R
 import com.subspy.app.data.model.Subscription
+import com.subspy.app.data.model.UsageStatus
 import com.subspy.app.ui.theme.ForgottenRed
 import com.subspy.app.ui.theme.GreenAccent
 import com.subspy.app.viewmodel.SubscriptionUiState
@@ -65,6 +67,7 @@ fun HomeScreen(
     subscriptionViewModel: SubscriptionViewModel,
     onSubscriptionClick: (String) -> Unit,
     onNotificationsClick: () -> Unit,
+    onAnalyticsClick: () -> Unit,
     onPremiumClick: () -> Unit,
     onAddSourcesClick: () -> Unit,
     onSignOut: () -> Unit
@@ -96,6 +99,13 @@ fun HomeScreen(
                                 tint = GreenAccent
                             )
                         }
+                    }
+                    IconButton(onClick = onAnalyticsClick) {
+                        Icon(
+                            Icons.Default.BarChart,
+                            contentDescription = stringResource(R.string.analytics_title),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     IconButton(onClick = onNotificationsClick) {
                         Icon(
@@ -186,8 +196,28 @@ fun HomeScreen(
                     }
                 }
                 is SubscriptionUiState.Success -> {
+                    // Subscriptions the user marked as unused — worth cancelling.
+                    val unused = subscriptions.filter { it.usage == UsageStatus.NOT_USED }
+                    if (unused.isNotEmpty()) {
+                        item {
+                            CancelSuggestionCard(
+                                count = unused.size,
+                                yearlyWaste = unused.sumOf { it.monthlyAmount } * 12
+                            )
+                        }
+                        items(unused) { subscription ->
+                            SubscriptionItem(
+                                subscription = subscription,
+                                onClick = { onSubscriptionClick(subscription.id) },
+                                isForgotten = true
+                            )
+                        }
+                    }
+
                     // Forgotten subscriptions section
-                    val forgotten = subscriptions.filter { it.isForgotten }
+                    val forgotten = subscriptions.filter {
+                        it.isForgotten && it.usage != UsageStatus.NOT_USED
+                    }
                     if (forgotten.isNotEmpty()) {
                         item {
                             Text(
@@ -207,7 +237,9 @@ fun HomeScreen(
                     }
 
                     // Active subscriptions section
-                    val active = subscriptions.filter { !it.isForgotten }
+                    val active = subscriptions.filter {
+                        !it.isForgotten && it.usage != UsageStatus.NOT_USED
+                    }
                     if (active.isNotEmpty()) {
                         item {
                             Text(
@@ -340,6 +372,11 @@ private fun SubscriptionItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Text(
+                    text = categoryLabel(subscription.category),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = categoryColor(subscription.category)
+                )
             }
 
             Column(horizontalAlignment = Alignment.End) {
@@ -353,6 +390,49 @@ private fun SubscriptionItem(
                     text = if (subscription.frequency == com.subspy.app.data.model.BillingFrequency.MONTHLY)
                         stringResource(R.string.per_month)
                     else stringResource(R.string.per_year),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CancelSuggestionCard(count: Int, yearlyWaste: Double) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = ForgottenRed.copy(alpha = 0.12f)
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Warning,
+                contentDescription = null,
+                tint = ForgottenRed,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = stringResource(R.string.suggested_to_cancel),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = ForgottenRed,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = stringResource(
+                        R.string.suggested_to_cancel_desc,
+                        count,
+                        formatCurrency(yearlyWaste)
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

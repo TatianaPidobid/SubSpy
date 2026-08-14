@@ -23,12 +23,15 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import com.subspy.app.R
 import com.subspy.app.data.model.BillingFrequency
 import com.subspy.app.data.model.CancellationDatabase
+import com.subspy.app.data.model.UsageStatus
 import com.subspy.app.ui.theme.ForgottenRed
 import com.subspy.app.ui.theme.GreenAccent
 import com.subspy.app.ui.theme.TextOnGreen
@@ -66,7 +71,8 @@ fun SubscriptionDetailScreen(
     subscriptionViewModel: SubscriptionViewModel,
     onBack: () -> Unit
 ) {
-    val subscription = subscriptionViewModel.getSubscriptionById(subscriptionId)
+    val subscriptions by subscriptionViewModel.subscriptions.collectAsState()
+    val subscription = subscriptions.find { it.id == subscriptionId }
     val context = LocalContext.current
     var showCancellationSteps by remember { mutableStateOf(false) }
 
@@ -153,6 +159,16 @@ fun SubscriptionDetailScreen(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    AssistChip(
+                        onClick = {},
+                        label = { Text(categoryLabel(subscription.category)) },
+                        colors = AssistChipDefaults.assistChipColors(
+                            labelColor = categoryColor(subscription.category)
+                        )
+                    )
+
                     if (subscription.isForgotten) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -206,7 +222,60 @@ fun SubscriptionDetailScreen(
                 icon = Icons.Default.CalendarMonth
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Usage rating: lets SubSpy suggest what is worth cancelling.
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stringResource(R.string.usage_question),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = subscription.usage == UsageStatus.ACTIVELY_USED,
+                            onClick = {
+                                subscriptionViewModel.setUsage(
+                                    subscription.id,
+                                    UsageStatus.ACTIVELY_USED
+                                )
+                            },
+                            label = { Text(stringResource(R.string.usage_active)) }
+                        )
+                        FilterChip(
+                            selected = subscription.usage == UsageStatus.NOT_USED,
+                            onClick = {
+                                subscriptionViewModel.setUsage(
+                                    subscription.id,
+                                    UsageStatus.NOT_USED
+                                )
+                            },
+                            label = { Text(stringResource(R.string.usage_not_used)) }
+                        )
+                    }
+                    if (subscription.usage == UsageStatus.NOT_USED) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.usage_cancel_advice,
+                                formatCurrency(subscription.monthlyAmount * 12)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ForgottenRed
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // How to Cancel button
             Button(

@@ -20,7 +20,9 @@ data class Subscription(
     val isForgotten: Boolean = false,
     val userId: String = "",
     val isActive: Boolean = true,
-    val source: String = ""
+    val source: String = "",
+    val category: SubscriptionCategory = SubscriptionCategory.OTHER,
+    val usage: UsageStatus = UsageStatus.UNKNOWN
 ) {
     val monthlyAmount: Double
         get() = when (frequency) {
@@ -44,4 +46,18 @@ data class Subscription(
 enum class BillingFrequency {
     MONTHLY,
     YEARLY
+}
+
+enum class SubscriptionCategory {
+    ENTERTAINMENT,
+    WORK,
+    HEALTH,
+    MUSIC,
+    OTHER
+}
+
+enum class UsageStatus {
+    UNKNOWN,
+    ACTIVELY_USED,
+    NOT_USED
 }

@@ -53,6 +53,45 @@
     <string name="no_upcoming_charges">No upcoming charges</string>
     <string name="notifications_enabled">Notifications enabled</string>
     <string name="notifications_disabled">Notifications disabled</string>
+    <plurals name="days_before_billing">
+        <item quantity="one">%1$d day before</item>
+        <item quantity="other">%1$d days before</item>
+    </plurals>
+    <string name="charge_alerts_hint">SubSpy also alerts you right after a charge is detected.</string>
+
+    <!-- Notification content -->
+    <string name="reminders_channel_name">Billing reminders</string>
+    <string name="charges_channel_name">Charge alerts</string>
+    <string name="reminder_title">Upcoming subscription charge</string>
+    <string name="reminder_text_today">%1$s charges %2$s today</string>
+    <string name="reminder_text_tomorrow">%1$s charges %2$s tomorrow</string>
+    <string name="reminder_text_days">%1$s charges %2$s in %3$d days</string>
+    <string name="charge_title">Payment detected</string>
+    <string name="charge_text">You were just charged %1$s for %2$s</string>
+
+    <!-- Analytics -->
+    <string name="analytics_title">Analytics</string>
+    <string name="analytics_no_data">Add or scan subscriptions to see your spending analytics</string>
+    <string name="monthly_spend_trend">Spending by month</string>
+    <string name="spending_by_category">Spending by category</string>
+    <string name="per_month_total">Per month</string>
+    <string name="per_year_total">Per year</string>
+
+    <!-- Categories -->
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_work">Work</string>
+    <string name="category_health">Health</string>
+    <string name="category_music">Music</string>
+    <string name="category_other">Other</string>
+    <string name="category">Category</string>
+
+    <!-- Usage rating -->
+    <string name="usage_question">Do you use this subscription?</string>
+    <string name="usage_active">I use it actively</string>
+    <string name="usage_not_used">I don\'t use it</string>
+    <string name="usage_cancel_advice">Worth cancelling: you would save %1$s per year.</string>
+    <string name="suggested_to_cancel">Worth cancelling</string>
+    <string name="suggested_to_cancel_desc">%1$d subscriptions you don\'t use \u2014 %2$s per year</string>
 
     <!-- Premium / Billing -->
     <string name="upgrade_to_premium">Upgrade to Premium</string>

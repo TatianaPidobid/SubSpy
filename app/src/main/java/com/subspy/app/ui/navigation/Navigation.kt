@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.subspy.app.ui.screens.AddSubscriptionScreen
+import com.subspy.app.ui.screens.AnalyticsScreen
 import com.subspy.app.ui.screens.HomeScreen
 import com.subspy.app.ui.screens.LoginScreen
 import com.subspy.app.ui.screens.NotificationsScreen
@@ -26,6 +27,7 @@ sealed class Screen(val route: String) {
         fun createRoute(id: String) = "detail/$id"
     }
     data object Notifications : Screen("notifications")
+    data object Analytics : Screen("analytics")
     data object Premium : Screen("premium")
     data object Sources : Screen("sources")
     data object AddManual : Screen("add_manual")
@@ -82,6 +84,9 @@ fun SubSpyNavigation(
                 onNotificationsClick = {
                     navController.navigate(Screen.Notifications.route)
                 },
+                onAnalyticsClick = {
+                    navController.navigate(Screen.Analytics.route)
+                },
                 onPremiumClick = {
                     navController.navigate(Screen.Premium.route)
                 },
@@ -111,6 +116,13 @@ fun SubSpyNavigation(
 
         composable(Screen.Notifications.route) {
             NotificationsScreen(
+                subscriptionViewModel = subscriptionViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Analytics.route) {
+            AnalyticsScreen(
                 subscriptionViewModel = subscriptionViewModel,
                 onBack = { navController.popBackStack() }
             )

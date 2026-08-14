@@ -2,6 +2,7 @@ package com.subspy.app.data.detection
 
 import com.subspy.app.data.model.BillingFrequency
 import com.subspy.app.data.model.Subscription
+import com.subspy.app.data.model.SubscriptionCategory
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -39,6 +40,37 @@ object SubscriptionDetector {
         "nordvpn" to Pair("NordVPN", "https://nordvpn.com"),
         "expressvpn" to Pair("ExpressVPN", "https://www.expressvpn.com")
     )
+
+    private val MUSIC_HINTS = listOf(
+        "spotify", "apple music", "soundcloud", "tidal", "deezer", "yandex music",
+        "yandex plus", "pandora", "audiomack", "music"
+    )
+    private val ENTERTAINMENT_HINTS = listOf(
+        "netflix", "youtube", "hulu", "disney", "hbo", "max", "prime", "amazon prime",
+        "twitch", "peacock", "paramount", "apple tv", "kinopoisk", "ivi", "okko",
+        "megogo", "crunchyroll", "steam", "playstation", "xbox", "nintendo"
+    )
+    private val HEALTH_HINTS = listOf(
+        "headspace", "calm", "peloton", "fitness", "gym", "health", "strava",
+        "fitbit", "whoop", "myfitnesspal", "nike", "yoga", "meditation"
+    )
+    private val WORK_HINTS = listOf(
+        "adobe", "microsoft", "office", "slack", "zoom", "notion", "dropbox",
+        "github", "gitlab", "figma", "canva", "grammarly", "workspace", "aws",
+        "openai", "chatgpt", "linkedin", "jira", "trello", "atlassian", "google one"
+    )
+
+    /** Best-effort category for a service name, used for spending breakdowns. */
+    fun categorize(serviceName: String): SubscriptionCategory {
+        val n = serviceName.lowercase()
+        return when {
+            MUSIC_HINTS.any { n.contains(it) } -> SubscriptionCategory.MUSIC
+            ENTERTAINMENT_HINTS.any { n.contains(it) } -> SubscriptionCategory.ENTERTAINMENT
+            HEALTH_HINTS.any { n.contains(it) } -> SubscriptionCategory.HEALTH
+            WORK_HINTS.any { n.contains(it) } -> SubscriptionCategory.WORK
+            else -> SubscriptionCategory.OTHER
+        }
+    }
 
     /** Words that indicate a message/notification is about a payment. */
     val PAYMENT_KEYWORDS = listOf(
@@ -153,10 +185,11 @@ object SubscriptionDetector {
             val isForgotten = ChronoUnit.MONTHS.between(lastDate, LocalDate.now()) >= 6
             val sources = merchantEvents.map { it.source }.distinct()
             val source = if (sources.size == 1) sources.first() else "multiple"
+            val serviceName = serviceInfo?.value?.first ?: merchantEvents.first().displayName
 
             Subscription(
                 id = merchantKey.hashCode().toString(),
-                serviceName = serviceInfo?.value?.first ?: merchantEvents.first().displayName,
+                serviceName = serviceName,
                 amount = mostCommonAmount,
                 currency = merchantEvents.first().currency,
                 frequency = frequency,
@@ -167,7 +200,8 @@ object SubscriptionDetector {
                 websiteUrl = serviceInfo?.value?.second ?: "",
                 isForgotten = isForgotten,
                 isActive = true,
-                source = source
+                source = source,
+                category = categorize(serviceName)
             )
         }.sortedByDescending { it.amount }
     }

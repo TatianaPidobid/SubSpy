@@ -8,8 +8,11 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.subspy.app.data.model.Subscription
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
@@ -49,8 +52,50 @@ class BillingReminderWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        // In production, this would check Firestore for upcoming subscriptions
-        // and trigger local notifications
+        val ctx = applicationContext
+        val enabledOffsets = NotificationPrefs.enabledOffsets(ctx)
+        if (enabledOffsets.isEmpty()) return Result.success()
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return Result.success()
+
+        val subscriptions = try {
+            FirebaseFirestore.getInstance()
+                .collection("users").document(uid)
+                .collection("subscriptions")
+                .get()
+                .await()
+                .toObjects(Subscription::class.java)
+        } catch (e: Exception) {
+            return Result.retry()
+        }
+
+        val today = LocalDate.now()
+        subscriptions.forEach { sub ->
+            if (!sub.isActive) return@forEach
+            val nextBilling = try {
+                LocalDate.parse(sub.nextBillingDate)
+            } catch (e: Exception) {
+                return@forEach
+            }
+            val daysUntil = ChronoUnit.DAYS.between(today, nextBilling).toInt()
+            val subscriptionKey = sub.id.ifBlank { sub.serviceName }
+            if (daysUntil in enabledOffsets &&
+                NotificationPrefs.markReminderSent(
+                    ctx,
+                    subscriptionKey,
+                    daysUntil,
+                    sub.nextBillingDate
+                )
+            ) {
+                SubSpyNotifier.notifyReminder(
+                    context = ctx,
+                    serviceName = sub.serviceName,
+                    amount = sub.amount,
+                    currency = sub.currency,
+                    daysUntil = daysUntil
+                )
+            }
+        }
         return Result.success()
     }
 

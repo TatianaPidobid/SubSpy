@@ -34,6 +34,43 @@
     <string name="no_upcoming_charges">Нет предстоящих списаний</string>
     <string name="notifications_enabled">Уведомления включены</string>
     <string name="notifications_disabled">Уведомления отключены</string>
+    <plurals name="days_before_billing">
+        <item quantity="one">За %1$d день</item>
+        <item quantity="few">За %1$d дня</item>
+        <item quantity="many">За %1$d дней</item>
+        <item quantity="other">За %1$d дня</item>
+    </plurals>
+    <string name="charge_alerts_hint">SubSpy также присылает уведомление сразу после обнаружения списания.</string>
+
+    <string name="reminders_channel_name">Напоминания о списаниях</string>
+    <string name="charges_channel_name">Уведомления о списаниях</string>
+    <string name="reminder_title">Скоро списание за подписку</string>
+    <string name="reminder_text_today">%1$s спишет %2$s сегодня</string>
+    <string name="reminder_text_tomorrow">%1$s спишет %2$s завтра</string>
+    <string name="reminder_text_days">%1$s спишет %2$s через %3$d дней</string>
+    <string name="charge_title">Обнаружено списание</string>
+    <string name="charge_text">С вас только что списали %1$s за %2$s</string>
+
+    <string name="analytics_title">Аналитика</string>
+    <string name="analytics_no_data">Добавьте или отсканируйте подписки, чтобы увидеть аналитику расходов</string>
+    <string name="monthly_spend_trend">Расходы по месяцам</string>
+    <string name="spending_by_category">Расходы по категориям</string>
+    <string name="per_month_total">В месяц</string>
+    <string name="per_year_total">В год</string>
+
+    <string name="category_entertainment">Развлечения</string>
+    <string name="category_work">Работа</string>
+    <string name="category_health">Здоровье</string>
+    <string name="category_music">Музыка</string>
+    <string name="category_other">Другое</string>
+    <string name="category">Категория</string>
+
+    <string name="usage_question">Вы пользуетесь этой подпиской?</string>
+    <string name="usage_active">Использую активно</string>
+    <string name="usage_not_used">Не использую</string>
+    <string name="usage_cancel_advice">Стоит отменить: вы сэкономите %1$s в год.</string>
+    <string name="suggested_to_cancel">Стоит отменить</string>
+    <string name="suggested_to_cancel_desc">%1$d подписок, которыми вы не пользуетесь — %2$s в год</string>
     <string name="upgrade_to_premium">Перейти на Премиум</string>
     <string name="premium_price">$2.99/мес</string>
     <string name="free_limit_message">Бесплатная версия показывает до 3 подписок</string>

@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.subspy.app.R
 import com.subspy.app.data.model.BillingFrequency
+import com.subspy.app.data.model.SubscriptionCategory
 import com.subspy.app.ui.theme.GreenAccent
 import com.subspy.app.viewmodel.SubscriptionViewModel
 
@@ -55,6 +56,8 @@ fun AddSubscriptionScreen(
     var currencyExpanded by remember { mutableStateOf(false) }
     var frequency by remember { mutableStateOf(BillingFrequency.MONTHLY) }
     var nextBillingDate by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf(SubscriptionCategory.OTHER) }
+    var categoryExpanded by remember { mutableStateOf(false) }
 
     val amount = amountText.replace(",", ".").toDoubleOrNull()
     val isValid = name.isNotBlank() && amount != null && amount > 0.0
@@ -131,6 +134,38 @@ fun AddSubscriptionScreen(
                 }
             }
 
+            ExposedDropdownMenuBox(
+                expanded = categoryExpanded,
+                onExpandedChange = { categoryExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = categoryLabel(category),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.category)) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = categoryExpanded,
+                    onDismissRequest = { categoryExpanded = false }
+                ) {
+                    SubscriptionCategory.entries.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(categoryLabel(option)) },
+                            onClick = {
+                                category = option
+                                categoryExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             Text(
                 text = stringResource(R.string.billing_frequency),
                 style = MaterialTheme.typography.bodyMedium,
@@ -167,7 +202,8 @@ fun AddSubscriptionScreen(
                         amount = amount ?: 0.0,
                         currency = currency,
                         frequency = frequency,
-                        nextBillingDate = nextBillingDate.trim()
+                        nextBillingDate = nextBillingDate.trim(),
+                        category = if (category == SubscriptionCategory.OTHER) null else category
                     )
                     onBack()
                 },
