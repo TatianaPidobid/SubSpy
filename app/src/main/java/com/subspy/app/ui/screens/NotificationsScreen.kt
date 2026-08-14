@@ -1,5 +1,7 @@
 package com.subspy.app.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -22,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -41,10 +46,12 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.subspy.app.R
 import com.subspy.app.data.model.Subscription
 import com.subspy.app.notifications.NotificationPrefs
 import com.subspy.app.ui.theme.GreenAccent
+import com.subspy.app.ui.theme.TextOnGreen
 import com.subspy.app.viewmodel.SubscriptionViewModel
 import java.text.NumberFormat
 import java.time.LocalDate
@@ -201,6 +208,77 @@ fun NotificationsScreen(
                 items(upcomingSubscriptions) { subscription ->
                     UpcomingChargeItem(subscription)
                 }
+            }
+
+            // Help & support
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.help_and_support),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            item {
+                val supportEmail = stringResource(R.string.support_email)
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:$supportEmail")
+                            putExtra(Intent.EXTRA_SUBJECT, "SubSpy support")
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (_: Exception) {
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenAccent),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.contact_support),
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextOnGreen
+                    )
+                }
+            }
+
+            item {
+                val privacyUrl = stringResource(R.string.privacy_policy_url)
+                OutlinedButton(
+                    onClick = {
+                        try {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl))
+                            )
+                        } catch (_: Exception) {
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.privacy_policy),
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            item {
+                Text(
+                    text = stringResource(R.string.support_email),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }

@@ -96,6 +96,10 @@
     <string name="cancel_step_2">Шаг 2: Войдите в свой аккаунт</string>
     <string name="cancel_step_3">Шаг 3: Перейдите в Настройки Аккаунта или Оплату</string>
     <string name="cancel_step_4">Шаг 4: Найдите опцию отмены подписки</string>
+    <string name="help_and_support">Помощь и поддержка</string>
+    <string name="contact_support">Связаться с поддержкой</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+
     <string name="cancel_subscription">Отменить подписку</string>
     <string name="done">Готово</string>
     <string name="cancel_tap_here">Нажмите вот сюда</string>

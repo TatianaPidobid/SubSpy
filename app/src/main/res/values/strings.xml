@@ -144,6 +144,13 @@
     <string name="cancel_step_4">Step 4: Find the cancellation or unsubscribe option</string>
     <string name="cancel_step_5">Step 5: Confirm cancellation</string>
 
+    <!-- Support -->
+    <string name="help_and_support">Help and support</string>
+    <string name="contact_support">Contact support</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="support_email" translatable="false">SubSpy.Support@gmail.com</string>
+    <string name="privacy_policy_url" translatable="false">https://tatianapidobid.github.io/SubSpy/</string>
+
     <!-- Guided cancellation flow -->
     <string name="cancel_subscription">Cancel subscription</string>
     <string name="done">Done</string>
