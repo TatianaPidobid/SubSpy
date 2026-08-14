@@ -107,31 +107,30 @@ fun AnalyticsScreen(
                         .fillMaxWidth()
                         .padding(vertical = 48.dp)
                 )
-                return@Column
-            }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SummaryTile(
+                        label = stringResource(R.string.per_month_total),
+                        value = formatMoney(monthlyTotal),
+                        modifier = Modifier.weight(1f)
+                    )
+                    SummaryTile(
+                        label = stringResource(R.string.per_year_total),
+                        value = formatMoney(yearlyTotal),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                SummaryTile(
-                    label = stringResource(R.string.per_month_total),
-                    value = formatMoney(monthlyTotal),
-                    modifier = Modifier.weight(1f)
-                )
-                SummaryTile(
-                    label = stringResource(R.string.per_year_total),
-                    value = formatMoney(yearlyTotal),
-                    modifier = Modifier.weight(1f)
-                )
-            }
+                SectionCard(title = stringResource(R.string.monthly_spend_trend)) {
+                    MonthlyBarChart(monthlyPoints)
+                }
 
-            SectionCard(title = stringResource(R.string.monthly_spend_trend)) {
-                MonthlyBarChart(monthlyPoints)
-            }
-
-            SectionCard(title = stringResource(R.string.spending_by_category)) {
-                val total = categorySlices.sumOf { it.total }
-                categorySlices.forEach { slice ->
-                    CategoryRow(slice = slice, total = total)
-                    Spacer(modifier = Modifier.height(12.dp))
+                SectionCard(title = stringResource(R.string.spending_by_category)) {
+                    val total = categorySlices.sumOf { it.total }
+                    categorySlices.forEach { slice ->
+                        CategoryRow(slice = slice, total = total)
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
         }
@@ -195,7 +194,7 @@ private fun MonthlyBarChart(points: List<MonthlyPoint>) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         points.forEach { point ->
-            val fraction = if (max > 0.0) (point.total / max).toFloat() else 0f
+            val fraction = safeFraction(point.total, max)
             val barHeight = (MAX_BAR_HEIGHT * fraction).coerceAtLeast(4.dp)
             Column(
                 modifier = Modifier.weight(1f),
@@ -229,7 +228,7 @@ private fun MonthlyBarChart(points: List<MonthlyPoint>) {
 
 @Composable
 private fun CategoryRow(slice: CategorySlice, total: Double) {
-    val fraction = if (total > 0.0) (slice.total / total).toFloat() else 0f
+    val fraction = safeFraction(slice.total, total)
     val color = categoryColor(slice.category)
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -257,7 +256,7 @@ private fun CategoryRow(slice: CategorySlice, total: Double) {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(fraction.coerceIn(0.02f, 1f))
+                    .fillMaxWidth(fraction.coerceAtLeast(0.02f))
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(color)
@@ -300,6 +299,13 @@ private fun categoryBreakdown(subscriptions: List<Subscription>): List<CategoryS
             )
         }
         .sortedByDescending { it.total }
+
+/** Ratio of [value] to [total], always a finite number in 0f..1f. */
+private fun safeFraction(value: Double, total: Double): Float {
+    if (total <= 0.0) return 0f
+    val fraction = (value / total).toFloat()
+    return if (fraction.isFinite()) fraction.coerceIn(0f, 1f) else 0f
+}
 
 private fun formatMoney(amount: Double): String =
     NumberFormat.getCurrencyInstance(Locale.US).format(amount)
