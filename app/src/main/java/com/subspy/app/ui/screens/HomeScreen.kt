@@ -3,6 +3,7 @@ package com.subspy.app.ui.screens
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,6 +34,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +45,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.subspy.app.R
 import com.subspy.app.data.model.Subscription
+import com.subspy.app.data.model.SubscriptionCategory
 import com.subspy.app.data.model.UsageStatus
 import com.subspy.app.ui.theme.ForgottenRed
 import com.subspy.app.ui.theme.GreenAccent
@@ -76,6 +83,14 @@ fun HomeScreen(
     val subscriptions by subscriptionViewModel.subscriptions.collectAsState()
     val totalMonthlySpend by subscriptionViewModel.totalMonthlySpend.collectAsState()
     val isPremium by subscriptionViewModel.isPremium.collectAsState()
+    var selectedCategory by remember { mutableStateOf<SubscriptionCategory?>(null) }
+
+    val usedCategories = SubscriptionCategory.entries.filter { category ->
+        subscriptions.any { it.category == category }
+    }
+    val visibleSubscriptions = subscriptions.filter {
+        selectedCategory == null || it.category == selectedCategory
+    }
 
     Scaffold(
         topBar = {
@@ -153,6 +168,17 @@ fun HomeScreen(
                 TotalSpendCard(totalMonthlySpend)
             }
 
+            // Category filter
+            if (usedCategories.size > 1) {
+                item {
+                    CategoryFilterRow(
+                        categories = usedCategories,
+                        selected = selectedCategory,
+                        onSelect = { selectedCategory = it }
+                    )
+                }
+            }
+
             // Premium Banner (if not premium)
             if (!isPremium && subscriptions.size >= 3) {
                 item {
@@ -197,7 +223,7 @@ fun HomeScreen(
                 }
                 is SubscriptionUiState.Success -> {
                     // Subscriptions the user marked as unused — worth cancelling.
-                    val unused = subscriptions.filter { it.usage == UsageStatus.NOT_USED }
+                    val unused = visibleSubscriptions.filter { it.usage == UsageStatus.NOT_USED }
                     if (unused.isNotEmpty()) {
                         item {
                             CancelSuggestionCard(
@@ -215,7 +241,7 @@ fun HomeScreen(
                     }
 
                     // Forgotten subscriptions section
-                    val forgotten = subscriptions.filter {
+                    val forgotten = visibleSubscriptions.filter {
                         it.isForgotten && it.usage != UsageStatus.NOT_USED
                     }
                     if (forgotten.isNotEmpty()) {
@@ -237,7 +263,7 @@ fun HomeScreen(
                     }
 
                     // Active subscriptions section
-                    val active = subscriptions.filter {
+                    val active = visibleSubscriptions.filter {
                         !it.isForgotten && it.usage != UsageStatus.NOT_USED
                     }
                     if (active.isNotEmpty()) {
@@ -254,6 +280,20 @@ fun HomeScreen(
                                 subscription = subscription,
                                 onClick = { onSubscriptionClick(subscription.id) },
                                 isForgotten = false
+                            )
+                        }
+                    }
+
+                    if (visibleSubscriptions.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.no_subscriptions_in_category),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp)
                             )
                         }
                     }
@@ -394,6 +434,33 @@ private fun SubscriptionItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun CategoryFilterRow(
+    categories: List<SubscriptionCategory>,
+    selected: SubscriptionCategory?,
+    onSelect: (SubscriptionCategory?) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            selected = selected == null,
+            onClick = { onSelect(null) },
+            label = { Text(stringResource(R.string.category_all)) }
+        )
+        categories.forEach { category ->
+            FilterChip(
+                selected = selected == category,
+                onClick = { onSelect(if (selected == category) null else category) },
+                label = { Text(categoryLabel(category)) }
+            )
         }
     }
 }
